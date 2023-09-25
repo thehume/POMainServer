@@ -90,7 +90,21 @@ bool CNetServer::Start()
 		InitErrorNum = 3;
 		return false;
 	}
+
+	//UDP socket()
+	listenUDPSock = socket(AF_INET, SOCK_DGRAM, 0);
+	{
+		if (listenUDPSock == INVALID_SOCKET)
+		{
+			InitErrorCode = WSAGetLastError();
+			wprintf(L"\nError code : %u", InitErrorCode);
+			InitErrorNum = 3;
+			return false;
+		}
+	}
+
 	wprintf(L"SOCKET() ok #\n");
+
 
 	//bind
 	SOCKADDR_IN serveraddr;
@@ -100,6 +114,22 @@ bool CNetServer::Start()
 
 	serveraddr.sin_port = htons(openPort);
 	int ret_bind = bind(listenSock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
+	if (ret_bind == SOCKET_ERROR)
+	{
+		InitErrorCode = WSAGetLastError();
+		wprintf(L"\nError code : %u", InitErrorCode);
+		InitErrorNum = 4;
+		return false;
+	}
+
+	//UDP bind
+	SOCKADDR_IN serverUDPaddr;
+	ZeroMemory(&serverUDPaddr, sizeof(serverUDPaddr));
+	serverUDPaddr.sin_family = AF_INET; // IPv4 
+	InetPtonW(AF_INET, openIP, &serverUDPaddr.sin_addr.s_addr);
+
+	serveraddr.sin_port = htons(openUDPPort);
+	ret_bind = bind(listenUDPSock, (SOCKADDR*)&serverUDPaddr, sizeof(serverUDPaddr));
 	if (ret_bind == SOCKET_ERROR)
 	{
 		InitErrorCode = WSAGetLastError();
@@ -821,6 +851,9 @@ DWORD WINAPI CNetServer::AcceptThread(CNetServer* ptr)
 		pSession->sendFlag = 0;
 		pSession->recvQueue.ClearBuffer();
 		pSession->disconnectStep = SESSION_NORMAL_STATE;
+		ZeroMemory(pSession->UDPIP, sizeof(pSession->UDPIP));
+		wcscpy(pSession->UDPIP, L"0.0.0.0");
+		pSession->UDPPort = 0;
 
 		CPacket* pPacket;
 		while (1)
@@ -1026,6 +1059,36 @@ DWORD WINAPI CNetServer::WorkerThread(CNetServer* ptr)
 		}
 	}
 	return 0;
+}
+
+DWORD WINAPI CNetServer::UDPThread(CNetServer* ptr)
+{
+
+
+	SOCKADDR_IN clientAddr;
+	int addrLen = sizeof(clientAddr);
+	int recvLen;
+	while (1)
+	{  
+		memset(&clientAddr, 0, sizeof(clientAddr));
+		
+		CPacket* pPacket = CPacket::mAlloc();
+		pPacket->ClearNetwork();
+		pPacket->addRef(1);
+		recvLen = recvfrom(ptr->listenUDPSock, pPacket->GetWriteBufferPtr(), pPacket->GetLeftUsableSize(), 0, 
+			 (SOCKADDR*)&clientAddr, &addrLen);
+
+		if (recvLen > 0 && recvLen < dfMAXPACKET_SIZE)
+		{
+			//문제는 회원번호,IP,Port만 보내줄텐데 이새기를 객체가 어딨는지 어케아는가?
+			// 프로토콜에 sessionID를 넣고, findsession(sessionID)로 찾아서 넣어야함. 잘못되더라도 10초후 갱신되니 상관x
+		}
+
+		if (pPacket->subRef() == 0)
+		{
+			CPacket::mFree(pPacket);
+		}
+	}
 }
 
 

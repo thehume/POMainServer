@@ -45,6 +45,8 @@ struct alignas(4096) st_Session
 {
 	INT64 sessionID;
 	SOCKET sock;
+	WCHAR UDPIP[16]; // UDP통신용
+	int UDPPort; // UDP통신용
 	volatile LONG isValid; // 세션 유효여부, 1(할당완료) 0(미사용중)
 	volatile LONG releaseFlag; // release 로직 실행여부 확인, DELFLAG_OFF(정상사용) DELFLAG_ON(삭제중 or 삭제 완료)
 	volatile LONG IOcount; //0이면 삭제
@@ -156,6 +158,7 @@ public:
 	static DWORD WINAPI ControlThread(CNetServer* ptr);
 	static DWORD WINAPI AcceptThread(CNetServer* ptr);
 	static DWORD WINAPI WorkerThread(CNetServer* ptr);
+	static DWORD WINAPI UDPThread(CNetServer* ptr);
 
 	DWORD InitErrorNum;
 	DWORD InitErrorCode;
@@ -168,6 +171,7 @@ private:
 
 	WCHAR openIP[20];
 	int openPort;
+	int openUDPPort;
 	int maxThreadNum;
 	int concurrentThreadNum;
 	bool Nagle;
@@ -204,6 +208,7 @@ private:
 
 	HANDLE hcp;
 	SOCKET listenSock;
+	SOCKET listenUDPSock;
 	HANDLE hWorkerThread[100];
 	HANDLE hAcceptThread;
 	HANDLE hControlThread;

@@ -3,6 +3,8 @@
 #define dfNETWORK_HEADER_SIZE 5
 #define dfNETWORK_CODE 0x77
 #define dfNETWORK_KEY 0x32
+#define dfMAXPACKET_SIZE 2000
+
 
 #pragma pack(1)
 
