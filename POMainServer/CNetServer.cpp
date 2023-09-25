@@ -1081,7 +1081,7 @@ DWORD WINAPI CNetServer::UDPThread(CNetServer* ptr)
 		if (recvLen > 0 && recvLen < dfMAXPACKET_SIZE)
 		{
 			//문제는 회원번호,IP,Port만 보내줄텐데 이새기를 객체가 어딨는지 어케아는가?
-			// 프로토콜에 sessionID를 넣고, findsession(sessionID)로 찾아서 넣어야함. 잘못되더라도 10초후 갱신되니 상관x
+			// 프로토콜에 sessionID를 넣고, findsession(sessionID)로 찾아서 넣어야함. 잘못되더도 10초후 갱신되니 상관x
 		}
 
 		if (pPacket->subRef() == 0)
