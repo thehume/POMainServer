@@ -261,9 +261,14 @@ DWORD WINAPI CLoginThread::LoginThreadFunction(CLoginThread* Instance)
 			{
 				PlayerPool.mFree(pPlayer);
 				st_Session* pSession;
-				if (pServer->findSession(LoginSessionID, &pSession) == true)
+				if (pServer->findSession(LoginSessionID, &pSession) == true) //이부분이 필요한지에 대해서 생각
 				{
 					pServer->disconnectSession(pSession);
+					if (InterlockedDecrement(&pSession->IOcount) == 0)
+					{
+						pServer->releaseRequest(pSession);
+					}
+
 				}
 				
 			}

@@ -628,6 +628,30 @@ bool CNetServer::popLoginQueue(INT64* pSessionID)
 }
 
 
+bool CNetServer::getUDPAddress(INT64 SessionID, WCHAR IP[], int& port)
+{
+	st_Session* pSession;
+	if (findSession(SessionID, &pSession) == false)
+	{
+		return false;
+	}
+
+	if (wcscmp(pSession->UDPIP, L"0.0.0.0") == true || pSession->UDPPort == -1)
+	{
+		return false;
+	}
+
+	wcscpy_s(IP, 16, pSession->UDPIP);
+	port = pSession->UDPPort;
+
+	if (InterlockedDecrement(&pSession->IOcount) == 0)
+	{
+		releaseRequest(pSession);
+	}
+
+	return true;
+}
+
 void CNetServer::sendPacket(INT64 SessionID, CPacket* pPacket, BOOL LastPacket)
 {
 	st_Session* pSession;
@@ -853,7 +877,7 @@ DWORD WINAPI CNetServer::AcceptThread(CNetServer* ptr)
 		pSession->disconnectStep = SESSION_NORMAL_STATE;
 		ZeroMemory(pSession->UDPIP, sizeof(pSession->UDPIP));
 		wcscpy(pSession->UDPIP, L"0.0.0.0");
-		pSession->UDPPort = 0;
+		pSession->UDPPort = -1;
 
 		CPacket* pPacket;
 		while (1)
@@ -1078,10 +1102,36 @@ DWORD WINAPI CNetServer::UDPThread(CNetServer* ptr)
 		recvLen = recvfrom(ptr->listenUDPSock, pPacket->GetWriteBufferPtr(), pPacket->GetLeftUsableSize(), 0, 
 			 (SOCKADDR*)&clientAddr, &addrLen);
 
-		if (recvLen > 0 && recvLen < dfMAXPACKET_SIZE)
+		if (recvLen > 0 && recvLen < dfMAXPACKET_SIZE) //어떤 최대치
 		{
-			//문제는 회원번호,IP,Port만 보내줄텐데 이새기를 객체가 어딨는지 어케아는가?
-			// 프로토콜에 sessionID를 넣고, findsession(sessionID)로 찾아서 넣어야함. 잘못되더도 10초후 갱신되니 상관x
+			short code;
+			*pPacket >> code;
+
+			if (code == 1) //1번패킷이면
+			{
+				INT64 SessionID;
+				WCHAR IP[16];
+				int Port;
+				
+
+				*pPacket >> SessionID;
+				pPacket->GetData((char*)IP, sizeof(IP));
+				*pPacket >> Port;
+
+				st_Session* pSession;
+				if (ptr->findSession(SessionID, &pSession) == true)
+				{
+					wcscpy_s(pSession->UDPIP, IP);
+					pSession->UDPPort = Port;
+					pSession->lastTime = GetTickCount64();
+					if (InterlockedDecrement(&pSession->IOcount) == 0)
+					{
+						ptr->releaseRequest(pSession);
+					}
+				}
+				//문제는 회원번호,IP,Port만 보내줄텐데 이새기를 객체가 어딨는지 어케아는가?
+				// 프로토콜에 sessionID를 넣고, findsession(sessionID)로 찾아서 넣어야함. 잘못되더도 10초후 갱신되니 상관x
+			}
 		}
 
 		if (pPacket->subRef() == 0)

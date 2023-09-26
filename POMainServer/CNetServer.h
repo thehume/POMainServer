@@ -47,6 +47,7 @@ struct alignas(4096) st_Session
 	SOCKET sock;
 	WCHAR UDPIP[16]; // UDP통신용
 	int UDPPort; // UDP통신용
+	ULONGLONG lastTime;
 	volatile LONG isValid; // 세션 유효여부, 1(할당완료) 0(미사용중)
 	volatile LONG releaseFlag; // release 로직 실행여부 확인, DELFLAG_OFF(정상사용) DELFLAG_ON(삭제중 or 삭제 완료)
 	volatile LONG IOcount; //0이면 삭제
@@ -145,6 +146,7 @@ public:
 	void freeJobItem(st_JobItem* JobItem);
 	bool popLoginQueue(INT64* pSessionID);
 
+	bool getUDPAddress(INT64 SessionID, WCHAR IP[], int& port);
 	int getMaxSession();
 	INT64 getAcceptSum();
 	int getSessionCount();
