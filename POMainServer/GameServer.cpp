@@ -42,6 +42,23 @@ void GameThread::OnRecv(volatile bool* MoveFlag, volatile short* MoveThreadNum, 
 		CS_GAME_RES_ECHO(sessionID, AccountNo, SendTick);
 		break;
 	}
+
+	case P2P_NETWORKING_HOSTCHECK_REQ:
+	{
+		WCHAR IP[16];
+		int port;
+		if (pServer->getUDPAddress((PlayerList.front())->SessionID, IP, port) == false)
+		{
+			systemLog(L"UDP error", dfLOG_LEVEL_DEBUG, L"UDP Info invalid");
+			return;
+		}
+
+		CS_P2P_NETWORKING_HOSTCHECK_RES(IP, port, sessionID);
+		break;
+
+	}
+
+
 	}
 }
 
@@ -75,6 +92,28 @@ void GameThread::CS_GAME_RES_LOGIN(INT64 sessionID, BYTE Status, INT64 AccountNo
 		CPacket::mFree(pPacket);
 	}
 }
+
+
+void GameThread::CS_P2P_NETWORKING_HOSTCHECK_RES(WCHAR ip[], USHORT Port, ULONGLONG SessionID)
+{
+	WORD Type = P2P_NETWORKING_HOSTCHECK_RES;
+
+	CPacket* pPacket = CPacket::mAlloc();
+	pPacket->Clear();
+	pPacket->addRef(1);
+
+	*pPacket << Type;
+	pPacket->PutData((char*)ip, 32);
+	*pPacket << Port;
+	*pPacket << SessionID;
+
+	sendPacket(SessionID, pPacket);
+	if (pPacket->subRef() == 0)
+	{
+		CPacket::mFree(pPacket);
+	}
+}
+
 
 void GameThread::CS_GAME_RES_ECHO(INT64 sessionID, INT64 AccountNo, LONGLONG SendTick)
 {

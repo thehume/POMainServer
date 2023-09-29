@@ -97,10 +97,11 @@ public:
 class CInitParam
 {
 public:
-	CInitParam(WCHAR* openIP, int openPort, int maxThreadNum, int concurrentThreadNum, bool Nagle, int maxSession)
+	CInitParam(WCHAR* openIP, int openPort, int openUDPPort, int maxThreadNum, int concurrentThreadNum, bool Nagle, int maxSession)
 	{
 		wcscpy_s(this->openIP, openIP);
 		this->openPort = openPort;
+		this->openUDPPort = openUDPPort;
 		this->maxThreadNum = maxThreadNum;
 		this->concurrentThreadNum = concurrentThreadNum;
 		this->Nagle = Nagle;
@@ -109,6 +110,7 @@ public:
 
 	WCHAR openIP[20];
 	int openPort;
+	int openUDPPort;
 	int maxThreadNum;
 	int concurrentThreadNum;
 	bool Nagle;
@@ -129,6 +131,7 @@ public:
 	void sendPost(st_Session* pSession);
 	bool findSession(INT64 SessionID, st_Session** ppSession);
 	void disconnectSession(st_Session* pSession);
+	void disconnectSession(INT64 SessionID);
 	void sendPacket(INT64 SessionID, CPacket* packet, BOOL LastPacket = FALSE);
 	void sendPacket(CSessionSet* pSessionSet, CPacket* pPacket, BOOL LastPacket = FALSE);
 	void releaseSession(INT64 SessionID);

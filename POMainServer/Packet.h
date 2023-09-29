@@ -63,6 +63,7 @@ public:
 	CPacket& operator << (unsigned int iValue);
 	CPacket& operator << (long lValue);
 	CPacket& operator << (unsigned long lValue);
+	CPacket& operator << (unsigned long long llValue);
 	CPacket& operator << (float fValue);
 
 	CPacket& operator << (__int64 iValue);
@@ -78,6 +79,7 @@ public:
 	CPacket& operator >> (unsigned int& iValue);
 	CPacket& operator >> (long& dwValue);
 	CPacket& operator >> (unsigned long& dwValue);
+	CPacket& operator >> (unsigned long long& llValue);
 	CPacket& operator >> (float& fValue);
 
 	CPacket& operator >> (__int64& iValue);

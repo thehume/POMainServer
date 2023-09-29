@@ -16,7 +16,7 @@ enum en_PACKET_TYPE
 	//		INT64	AccountNo
 	//		char	SessionKey[64]
 	//
-	//		int		Version			// 1 
+	//		
 	//	}
 	//
 	//------------------------------------------------------------
@@ -82,3 +82,74 @@ enum en_PACKET_TYPE
 };
 
 
+enum protocolType
+{
+    // P2P 네트워킹 프로토콜 타입 범위 (1000 ~ 1020)
+    P2P_NETWORKING_HOSTCHECK_REQ = 1000,
+	//------------------------------------------------------------
+	//  호스트 체크(현재파티의 호스트가 누구인지)
+	// 
+	//	{
+	//		WORD		Type
+	//	}
+	//
+	//------------------------------------------------------------
+
+    P2P_NETWORKING_HOSTCHECK_RES = 1001,
+	//------------------------------------------------------------
+	//  호스트 체크(현재파티의 호스트가 누구인지)
+	// 
+	//	{
+	//		WORD		Type
+	//		WCHAR       ip[16]
+	//		USHORT      port
+	//		ULONGLONG   sessionID
+	//	}
+	//
+	//------------------------------------------------------------
+
+
+    P2P_NETWORKING_HOSTAVALIABLE_REQ = 1002,
+	//------------------------------------------------------------
+	//  p2p 내가 끊어졌는지 or 호스트가 끊어졌는지
+	// 
+	//	{
+	//		WORD		Type
+	//		ULONGLONG   sessionID
+	//	}
+	//
+	//------------------------------------------------------------
+
+    P2P_NETWORKING_HOSTAVALIABLE_RES = 1003,
+	//------------------------------------------------------------
+	//  p2p 내가 끊어졌는지 or 호스트가 끊어졌는지
+	// 
+	//	{
+	//		WORD		Type
+	//		BYTE		status
+	//	}
+	//
+	//------------------------------------------------------------
+ 
+    P2P_NETWORKING_HOSTCHANGE_REQ = 1004,
+	//------------------------------------------------------------
+	//  p2p 호스트 바꾸라는 요청
+	// 
+	//	{
+	//		WORD		Type
+	//		WCHAR		ip[16];
+	//		USHORT		port;
+	//	}
+	//
+	//------------------------------------------------------------
+
+    P2P_NETWORKING_HOSTCHANGE_RES = 1005,
+ 
+    P2P_NETWORKING_PARTYINFO_REQ = 1006,
+    P2P_NETWORKING_PARTYINFO_RES = 1007,
+ 
+    P2P_NETWORKING_NETWORKINGINFO_REQ = 1008,
+    P2P_NETWORKING_NETWORKINGINFO_RES = 1009,
+ 
+    P2P_NETWORKING_TEST = 1010,
+};

@@ -52,6 +52,7 @@ public:
 
 	virtual void onThreadJoin(INT64 sessionID, INT64 accountNo, PlayerInfo* pPlayerInfo);
 	void CS_GAME_RES_LOGIN(INT64 sessionID, BYTE	Status, INT64 AccountNo);
+	void CS_P2P_NETWORKING_HOSTCHECK_RES(WCHAR ip[], USHORT Port, ULONGLONG SessionID);
 	void CS_GAME_RES_ECHO(INT64 sessionID, INT64 AccountNo, LONGLONG SendTick);
 
 
@@ -64,6 +65,7 @@ public:
 
 	virtual void OnRecv(volatile bool* MoveFlag, volatile short* MoveThreadNum, PlayerInfo* pPlayerInfo, INT64 sessionID, INT64 accountNo, CPacket* pPacket);
 	virtual void Update(void) {};
+
 
 	void CS_GAME_RES_LOGIN(INT64 sessionID, BYTE	Status, INT64 AccountNo);
 	void CS_GAME_RES_ECHO(INT64 sessionID, INT64 AccountNo, LONGLONG SendTick);

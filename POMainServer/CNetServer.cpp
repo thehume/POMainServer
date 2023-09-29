@@ -443,6 +443,24 @@ void CNetServer::disconnectSession(st_Session* pSession)
 	CancelIoEx((HANDLE)pSession->sock, NULL); //send , recv 모두를 cancel시킨다
 }
 
+void CNetServer::disconnectSession(INT64 SessionID)
+{
+	st_Session* pSession;
+	if(findSession(SessionID, &pSession) == false)
+	{
+		return;
+	}
+
+	disconnectSession(pSession);
+
+	if (InterlockedDecrement(&pSession->IOcount) == 0)
+	{
+		releaseRequest(pSession);
+	}
+
+}
+
+
 void CNetServer::releaseSession(INT64 SessionID)
 {
 	short index = (short)SessionID;
@@ -876,7 +894,7 @@ DWORD WINAPI CNetServer::AcceptThread(CNetServer* ptr)
 		pSession->recvQueue.ClearBuffer();
 		pSession->disconnectStep = SESSION_NORMAL_STATE;
 		ZeroMemory(pSession->UDPIP, sizeof(pSession->UDPIP));
-		wcscpy(pSession->UDPIP, L"0.0.0.0");
+		wcscpy_s(pSession->UDPIP, L"0.0.0.0");
 		pSession->UDPPort = -1;
 
 		CPacket* pPacket;
@@ -1113,10 +1131,10 @@ DWORD WINAPI CNetServer::UDPThread(CNetServer* ptr)
 				WCHAR IP[16];
 				int Port;
 				
-
+				//아래가 아니라 clientAddr로 보는거다.
 				*pPacket >> SessionID;
-				pPacket->GetData((char*)IP, sizeof(IP));
-				*pPacket >> Port;
+				InetNtopW(AF_INET, &clientAddr.sin_addr.s_addr, IP, 16);
+				Port = ntohs(clientAddr.sin_port);
 
 				st_Session* pSession;
 				if (ptr->findSession(SessionID, &pSession) == true)

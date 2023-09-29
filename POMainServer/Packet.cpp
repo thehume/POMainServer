@@ -338,6 +338,19 @@ CPacket& CPacket::operator << (unsigned long lValue)
 	return *this;
 
 }
+
+CPacket& CPacket::operator << (unsigned long long llValue)
+{
+	if (end - writePos >= sizeof(unsigned long long))
+	{
+		*(unsigned long long*)writePos = llValue;
+		writePos += sizeof(unsigned long long);
+		DataSize += sizeof(unsigned long long);
+	}
+	return *this;
+
+}
+
 CPacket& CPacket::operator << (float fValue)
 {
 	if (end - writePos >= sizeof(float))
@@ -464,6 +477,19 @@ CPacket& CPacket::operator >> (unsigned long& dwValue)
 	return *this;
 
 }
+
+CPacket& CPacket::operator >> (unsigned long long& llValue)
+{
+	if (writePos - readPos >= sizeof(unsigned long long))
+	{
+		llValue = *(unsigned long long*)readPos;
+		readPos += sizeof(unsigned long long);
+		DataSize -= sizeof(unsigned long long);
+	}
+	return *this;
+
+}
+
 CPacket& CPacket::operator >> (float& fValue)
 {
 	if (writePos - readPos >= sizeof(float))
